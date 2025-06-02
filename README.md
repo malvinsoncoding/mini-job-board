@@ -151,3 +151,4 @@ The project is structured in a modular and scalable way using **Next.js App Rout
 - Implement google location for filling out the location field
 - Add job application tracking
 - Access grant between admin and user (create new job, update, and delete must be admin)
+- Make more fields that can be filtered (not only location and job type)
