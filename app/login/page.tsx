@@ -19,7 +19,6 @@ export default function Login() {
     if (error) {
       setError(error.message);
     } else {
-      // Ensure auth state is synced
       await supabase.auth.getSession();
       router.refresh();
       router.push("/dashboard");
@@ -53,7 +52,7 @@ export default function Login() {
         </button>
       </form>
       <p className="mt-4 text-center">
-        Don't have an account?{" "}
+        {"Don't have an account?"}
         <a href="/signup" className="text-blue-500">
           Sign Up
         </a>

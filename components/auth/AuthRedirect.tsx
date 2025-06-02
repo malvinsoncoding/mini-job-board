@@ -10,7 +10,7 @@ export default function AuthRedirect() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) router.push("/login");
     });
-  }, []);
+  }, [router]);
 
   return null;
 }

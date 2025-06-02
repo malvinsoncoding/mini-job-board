@@ -1,56 +1,50 @@
-"use client";
-import { useState } from "react";
-import { supabase } from "@/src/lib/supabase/client";
-import { useRouter } from "next/navigation";
+import { createClient } from "@/src/lib/supabase/server";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
-export default function NewJobPage() {
-  const router = useRouter();
-  const [formData, setFormData] = useState({
-    title: "",
-    company_name: "",
-    description: "",
-    location: "",
-    job_type: "Full-Time",
-  });
-  const [error, setError] = useState("");
+export default async function EditJobPage({
+                                            params,
+                                          }: {
+  params: { id: string };
+}) {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
 
-    if (!user) {
-      setError("You must be logged in to post a job.");
-      return;
-    }
+  const { data: job } = await supabase
+    .from("jobs")
+    .select("*")
+    .eq("id", params.id)
+    .single();
 
-    const { error } = await supabase.from("jobs").insert({
-      ...formData,
-      user_id: user.id,
-    });
-
-    if (error) {
-      setError(error.message);
-    } else {
-      router.push("/dashboard");
-    }
-  };
+  if (!job || job.user_id !== user.id) {
+    redirect("/dashboard");
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-4">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Post a New Job</h1>
-        <Link
-          href="/dashboard"
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          Back to Dashboard
-        </Link>
+        <h1 className="text-2xl font-bold">Edit Job Posting</h1>
+        <div className="flex gap-2">
+          <Link
+            href={`/dashboard/jobs/${job.id}`}
+            className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          >
+            View Job
+          </Link>
+          <Link
+            href="/dashboard"
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Back to Dashboard
+          </Link>
+        </div>
       </div>
 
-      {error && <p className="text-red-500 mb-4">{error}</p>}
+      <form action={updateJob} className="space-y-6">
+        <input type="hidden" name="id" value={job.id} />
 
-      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
             Job Title *
@@ -58,10 +52,9 @@ export default function NewJobPage() {
           <input
             type="text"
             id="title"
-            placeholder="Senior Software Engineer"
+            name="title"
+            defaultValue={job.title}
             className="w-full p-2 border rounded"
-            value={formData.title}
-            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
             required
           />
         </div>
@@ -73,10 +66,9 @@ export default function NewJobPage() {
           <input
             type="text"
             id="company_name"
-            placeholder="Konexi"
+            name="company_name"
+            defaultValue={job.company_name}
             className="w-full p-2 border rounded"
-            value={formData.company_name}
-            onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
             required
           />
         </div>
@@ -87,10 +79,9 @@ export default function NewJobPage() {
           </label>
           <textarea
             id="description"
-            placeholder="Describe the job responsibilities and requirements..."
+            name="description"
+            defaultValue={job.description}
             className="w-full p-2 border rounded min-h-[200px]"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             required
           />
         </div>
@@ -102,10 +93,9 @@ export default function NewJobPage() {
           <input
             type="text"
             id="location"
-            placeholder="New York, NY or Remote"
+            name="location"
+            defaultValue={job.location}
             className="w-full p-2 border rounded"
-            value={formData.location}
-            onChange={(e) => setFormData({ ...formData, location: e.target.value })}
             required
           />
         </div>
@@ -116,9 +106,10 @@ export default function NewJobPage() {
           </label>
           <select
             id="job_type"
+            name="job_type"
+            defaultValue={job.job_type}
             className="w-full p-2 border rounded"
-            value={formData.job_type}
-            onChange={(e) => setFormData({ ...formData, job_type: e.target.value })}
+            required
           >
             <option value="Full-Time">Full-Time</option>
             <option value="Part-Time">Part-Time</option>
@@ -128,7 +119,7 @@ export default function NewJobPage() {
 
         <div className="flex justify-end gap-4 pt-4">
           <Link
-            href="/dashboard"
+            href={`/dashboard/jobs/${job.id}`}
             className="px-4 py-2 border rounded hover:bg-gray-100"
           >
             Cancel
@@ -137,10 +128,26 @@ export default function NewJobPage() {
             type="submit"
             className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
           >
-            Post Job
+            Save Changes
           </button>
         </div>
       </form>
     </div>
   );
+}
+
+async function updateJob(formData: FormData) {
+  "use server";
+  const supabase = createClient();
+  const id = formData.get("id") as string;
+
+  await supabase.from("jobs").update({
+    title: formData.get("title"),
+    company_name: formData.get("company_name"),
+    description: formData.get("description"),
+    location: formData.get("location"),
+    job_type: formData.get("job_type"),
+  }).eq("id", id);
+
+  redirect(`/dashboard/jobs/${id}`);
 }

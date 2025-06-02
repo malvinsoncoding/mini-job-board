@@ -1,103 +1,121 @@
-import Image from "next/image";
+import Link from "next/link";
+import { createClient } from "@/src/lib/supabase/server";
 
-export default function Home() {
+export default async function PublicJobBoard({
+                                               searchParams,
+                                             }: {
+  searchParams?: {
+    title?: string;
+    company_name?: string;
+    location?: string;
+    job_type?: string;
+  };
+}) {
+  const supabase = createClient();
+
+  const params = await searchParams;
+
+  let query = supabase
+    .from("jobs")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (params?.title) {
+    query = query.ilike("title", `%${params.title}%`);
+  }
+
+  if (params?.company_name) {
+    query = query.ilike("company_name", `%${params.company_name}%`);
+  }
+
+  if (params?.location) {
+    query = query.ilike("location", `%${params.location}%`);
+  }
+
+  if (params?.job_type) {
+    query = query.eq("job_type", params.job_type);
+  }
+
+  const { data: jobs } = await query;
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="max-w-6xl mx-auto p-4">
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold">Job Board</h1>
+        <Link
+          href="/login"
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Login
+        </Link>
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      {/* Filter Section */}
+      <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+        <h2 className="text-lg font-semibold mb-4">Filter</h2>
+        <form className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <input
+            type="text"
+            name="title"
+            placeholder="Job Title"
+            className="p-2 border rounded"
+            defaultValue={params?.title || ""}
+          />
+          <input
+            type="text"
+            name="company_name"
+            placeholder="Company Name"
+            className="p-2 border rounded"
+            defaultValue={params?.company_name || ""}
+          />
+          <input
+            type="text"
+            name="location"
+            placeholder="Location"
+            className="p-2 border rounded"
+            defaultValue={params?.location || ""}
+          />
+          <select
+            name="job_type"
+            className="p-2 border rounded"
+            defaultValue={params?.job_type || ""}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            <option value="">All Types</option>
+            <option value="Full-Time">Full-Time</option>
+            <option value="Part-Time">Part-Time</option>
+            <option value="Contract">Contract</option>
+          </select>
+          <button
+            type="submit"
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+            Apply
+          </button>
+        </form>
+      </div>
+
+      {/* Job Listings */}
+      <div className="space-y-4">
+        {jobs?.length ? (
+          jobs.map((job) => (
+            <div
+              key={job.id}
+              className="p-4 border rounded-lg hover:shadow-md transition-shadow"
+            >
+              <h2 className="text-xl font-semibold">{job.title}</h2>
+              <p className="text-gray-600">{job.company_name}</p>
+              <p className="text-gray-500">
+                {job.location} • {job.job_type}
+              </p>
+            </div>
+          ))
+        ) : (
+          <p className="text-center py-8 text-gray-500">
+            No jobs match your filters.
+          </p>
+        )}
+      </div>
     </div>
   );
 }

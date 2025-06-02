@@ -1,7 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { Job } from '@/src/types';
 
-export default function JobCard({ job }: { job: any }) {
+export default function JobCard({ job }: { job: Job }) {
   const router = useRouter();
 
   return (
