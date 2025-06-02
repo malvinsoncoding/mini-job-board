@@ -8,7 +8,6 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user }, error } = await supabase.auth.getUser();
 
-  // Debug logs (remove in production)
   console.log('Middleware auth check:', { user, error });
 
   if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
@@ -20,7 +19,6 @@ export async function middleware(request: NextRequest) {
   return response;
 }
 
-// middleware.ts
 export const config = {
   matcher: ["/dashboard/:path*"],
 };
