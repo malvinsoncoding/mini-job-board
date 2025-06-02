@@ -3,11 +3,11 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import DeleteJobButton from '@/components/DeleteJobButton';
 
-export default async function JobDetailPage({
-                                              params,
-                                            }: {
+interface JobDetailPageProps {
   params: { id: string };
-}) {
+}
+
+export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 

@@ -15,6 +15,7 @@ export default async function Dashboard({
 
 }) {
   const supabase = createClient();
+  const params = await searchParams;
   const { data: { user } } = await supabase.auth.getUser();
 
   if (!user) redirect("/login");
@@ -25,20 +26,20 @@ export default async function Dashboard({
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  if (searchParams?.title) {
-    query = query.ilike("title", `%${searchParams.title}%`);
+  if (params?.title) {
+    query = query.ilike("title", `%${params.title}%`);
   }
 
-  if (searchParams?.company_name) {
-    query = query.ilike("company_name", `%${searchParams.company_name}%`);
+  if (params?.company_name) {
+    query = query.ilike("company_name", `%${params.company_name}%`);
   }
 
-  if (searchParams?.location) {
-    query = query.ilike("location", `%${searchParams.location}%`);
+  if (params?.location) {
+    query = query.ilike("location", `%${params.location}%`);
   }
 
-  if (searchParams?.job_type) {
-    query = query.eq("job_type", searchParams.job_type);
+  if (params?.job_type) {
+    query = query.eq("job_type", params.job_type);
   }
 
   const { data: jobs } = await query;
@@ -67,26 +68,26 @@ export default async function Dashboard({
             name="title"
             placeholder="Job Title"
             className="p-2 border rounded"
-            defaultValue={searchParams?.title || ""}
+            defaultValue={params?.title || ""}
           />
           <input
             type="text"
             name="company_name"
             placeholder="Company Name"
             className="p-2 border rounded"
-            defaultValue={searchParams?.company_name || ""}
+            defaultValue={params?.company_name || ""}
           />
           <input
             type="text"
             name="location"
             placeholder="Location"
             className="p-2 border rounded"
-            defaultValue={searchParams?.location || ""}
+            defaultValue={params?.location || ""}
           />
           <select
             name="job_type"
             className="p-2 border rounded"
-            defaultValue={searchParams?.job_type || ""}
+            defaultValue={params?.job_type || ""}
           >
             <option value="">All Types</option>
             <option value="Full-Time">Full-Time</option>
@@ -121,7 +122,7 @@ export default async function Dashboard({
           ))
         ) : (
           <p className="text-center py-8 text-gray-500">
-            { searchParams?.location || searchParams?.job_type
+            { params?.location || params?.job_type
               ? "No jobs match your filters"
               : "You haven't posted any jobs yet" }
           </p>
