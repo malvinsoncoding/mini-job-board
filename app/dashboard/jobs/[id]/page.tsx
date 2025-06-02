@@ -3,11 +3,11 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import DeleteJobButton from '@/components/DeleteJobButton';
 
-interface JobDetailPageProps {
-  params: { id: string };
-}
-
-export default async function JobDetailPage({ params }: JobDetailPageProps) {
+export default async function JobDetailPage({
+                                              params,
+                                            }: {
+  params: Promise<{ id: string }>;
+}) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -16,7 +16,7 @@ export default async function JobDetailPage({ params }: JobDetailPageProps) {
   const { data: job } = await supabase
     .from("jobs")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", (await params).id)
     .single();
 
   if (!job || job.user_id !== user.id) {

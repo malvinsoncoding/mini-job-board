@@ -6,12 +6,12 @@ import LogoutButton from "@/components/LogoutButton";
 export default async function Dashboard({
                                           searchParams,
                                         }: {
-  searchParams?: {
+  searchParams?: Promise<{
     location?: string;
     job_type?: string;
     title?: string;
     company_name?: string;
-  };
+  }>;
 
 }) {
   const supabase = createClient();

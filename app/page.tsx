@@ -4,12 +4,12 @@ import { createClient } from "@/src/lib/supabase/server";
 export default async function PublicJobBoard({
                                                searchParams,
                                              }: {
-  searchParams?: {
+  searchParams?: Promise<{
     title?: string;
     company_name?: string;
     location?: string;
     job_type?: string;
-  };
+  }>;
 }) {
   const supabase = createClient();
 

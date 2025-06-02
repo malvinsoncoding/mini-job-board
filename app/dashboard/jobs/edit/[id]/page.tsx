@@ -5,7 +5,7 @@ import Link from "next/link";
 export default async function EditJobPage({
                                             params,
                                           }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -15,7 +15,7 @@ export default async function EditJobPage({
   const { data: job } = await supabase
     .from("jobs")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", (await params).id)
     .single();
 
   if (!job || job.user_id !== user.id) {
